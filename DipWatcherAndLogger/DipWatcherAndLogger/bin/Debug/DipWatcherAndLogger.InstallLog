@@ -1,0 +1,15 @@
+﻿Installing assembly '\\pekinfp03\systems$\guidewire\mz31164\my documents\visual studio 2015\Projects\DipWatcherAndLogger\DipWatcherAndLogger\bin\Debug\DipWatcherAndLogger.exe'.
+Affected parameters are:
+   i = 
+   logfile = \\pekinfp03\systems$\guidewire\mz31164\my documents\visual studio 2015\Projects\DipWatcherAndLogger\DipWatcherAndLogger\bin\Debug\DipWatcherAndLogger.InstallLog
+   assemblypath = \\pekinfp03\systems$\guidewire\mz31164\my documents\visual studio 2015\Projects\DipWatcherAndLogger\DipWatcherAndLogger\bin\Debug\DipWatcherAndLogger.exe
+   logtoconsole = 
+No public installers with the RunInstallerAttribute.Yes attribute could be found in the \\pekinfp03\systems$\guidewire\mz31164\my documents\visual studio 2015\Projects\DipWatcherAndLogger\DipWatcherAndLogger\bin\Debug\DipWatcherAndLogger.exe assembly.
+Committing assembly '\\pekinfp03\systems$\guidewire\mz31164\my documents\visual studio 2015\Projects\DipWatcherAndLogger\DipWatcherAndLogger\bin\Debug\DipWatcherAndLogger.exe'.
+Affected parameters are:
+   i = 
+   logfile = \\pekinfp03\systems$\guidewire\mz31164\my documents\visual studio 2015\Projects\DipWatcherAndLogger\DipWatcherAndLogger\bin\Debug\DipWatcherAndLogger.InstallLog
+   assemblypath = \\pekinfp03\systems$\guidewire\mz31164\my documents\visual studio 2015\Projects\DipWatcherAndLogger\DipWatcherAndLogger\bin\Debug\DipWatcherAndLogger.exe
+   logtoconsole = 
+No public installers with the RunInstallerAttribute.Yes attribute could be found in the \\pekinfp03\systems$\guidewire\mz31164\my documents\visual studio 2015\Projects\DipWatcherAndLogger\DipWatcherAndLogger\bin\Debug\DipWatcherAndLogger.exe assembly.
+Remove InstallState file because there are no installers.

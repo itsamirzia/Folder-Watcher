@@ -1,0 +1,7 @@
+\\pekinfp03\systems$\guidewire\mz31164\my documents\visual studio 2015\Projects\DipWatcherAndLogger\DipWatcherAndLogger\bin\Release\DipWatcherAndLogger.exe.config
+\\pekinfp03\systems$\guidewire\mz31164\my documents\visual studio 2015\Projects\DipWatcherAndLogger\DipWatcherAndLogger\bin\Release\DipWatcherAndLogger.exe
+\\pekinfp03\systems$\guidewire\mz31164\my documents\visual studio 2015\Projects\DipWatcherAndLogger\DipWatcherAndLogger\bin\Release\DipWatcherAndLogger.pdb
+\\pekinfp03\systems$\guidewire\mz31164\my documents\visual studio 2015\Projects\DipWatcherAndLogger\DipWatcherAndLogger\obj\Release\DipWatcherAndLogger.FolderWatcher.resources
+\\pekinfp03\systems$\guidewire\mz31164\my documents\visual studio 2015\Projects\DipWatcherAndLogger\DipWatcherAndLogger\obj\Release\DipWatcherAndLogger.csproj.GenerateResource.Cache
+\\pekinfp03\systems$\guidewire\mz31164\my documents\visual studio 2015\Projects\DipWatcherAndLogger\DipWatcherAndLogger\obj\Release\DipWatcherAndLogger.exe
+\\pekinfp03\systems$\guidewire\mz31164\my documents\visual studio 2015\Projects\DipWatcherAndLogger\DipWatcherAndLogger\obj\Release\DipWatcherAndLogger.pdb
