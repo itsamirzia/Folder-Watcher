@@ -41,8 +41,8 @@
             // serviceInstaller1
             // 
             this.serviceInstaller1.Description = resources.GetString("serviceInstaller1.Description");
-            this.serviceInstaller1.DisplayName = "Ingestion Folder Watcher 1.0.4";
-            this.serviceInstaller1.ServiceName = "Ingestion Folder Watcher 1.0.4";
+            this.serviceInstaller1.DisplayName = "Ingestion Folder Watcher";
+            this.serviceInstaller1.ServiceName = "Ingestion Folder Watcher";
             this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
             this.serviceInstaller1.AfterInstall += new System.Configuration.Install.InstallEventHandler(this.serviceInstaller1_AfterInstall);
             // 

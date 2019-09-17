@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Configuration;
 using System.Net.Mail;
 using System.Net;
+using System.Diagnostics;
+using System.Threading;
 
 namespace DipWatcherAndLogger
 {
@@ -13,10 +15,10 @@ namespace DipWatcherAndLogger
     {
         static public void SendMail(string body)
         {
-
+            //Debugger.Launch();
             string HostAdd = ConfigurationManager.AppSettings["host"].ToString();
-            string FromEmailid = "mzia@pekininsurance.com";
-            string Pass = "bar@22kati";
+            string FromEmailid = ConfigurationManager.AppSettings["Forwarder"].ToString();
+            string FromPassword = ConfigurationManager.AppSettings["ForwarderPassword"].ToString();
 
             MailMessage mailMessage = new MailMessage();
             mailMessage.From = new MailAddress(FromEmailid); //From Email Id  
@@ -25,42 +27,54 @@ namespace DipWatcherAndLogger
             mailMessage.IsBodyHtml = true;
             string toEmails = ConfigurationManager.AppSettings["EmailsTo"].ToString();
             string cc = ConfigurationManager.AppSettings["EmailsCC"].ToString();
-            string bcc = ConfigurationManager.AppSettings["EmailBCC"].ToString();
+            string bcc = ConfigurationManager.AppSettings["EmailsBCC"].ToString();
             string port = ConfigurationManager.AppSettings["SMTPPort"].ToString();
 
-            string[] ToMuliId = toEmails.Split(',');
-            foreach (string ToEMailId in ToMuliId)
+            if (toEmails.Trim() != string.Empty)
             {
-                mailMessage.To.Add(new MailAddress(ToEMailId)); //adding multiple TO Email Id  
+                string[] ToMuliId = toEmails.Split(',');
+                foreach (string ToEMailId in ToMuliId)
+                {
+                    mailMessage.To.Add(new MailAddress(ToEMailId)); //adding multiple TO Email Id  
+                }
             }
 
-
-            string[] CCId = cc.Split(',');
-
-            foreach (string CCEmail in CCId)
+            if (cc.Trim() != string.Empty)
             {
-                mailMessage.CC.Add(new MailAddress(CCEmail)); //Adding Multiple CC email Id  
+                string[] CCId = cc.Split(',');
+
+                foreach (string CCEmail in CCId)
+                {
+                    mailMessage.CC.Add(new MailAddress(CCEmail)); //Adding Multiple CC email Id  
+                }
             }
 
-            string[] bccid = bcc.Split(',');
-
-            foreach (string bccEmailId in bccid)
+            if (bcc.Trim() != string.Empty)
             {
-                mailMessage.Bcc.Add(new MailAddress(bccEmailId)); //Adding Multiple BCC email Id  
+                string[] bccid = bcc.Split(',');
+
+                foreach (string bccEmailId in bccid)
+                {
+                    mailMessage.Bcc.Add(new MailAddress(bccEmailId)); //Adding Multiple BCC email Id  
+                }
             }
             SmtpClient smtp = new SmtpClient();   
-            smtp.Host = HostAdd;              
-
-            //network and security related credentials  
-
+            smtp.Host = HostAdd;
             smtp.EnableSsl = false;
             NetworkCredential NetworkCred = new NetworkCredential();
-            NetworkCred.UserName = mailMessage.From.Address;
-            NetworkCred.Password = Pass;
-            smtp.UseDefaultCredentials = true;
+            NetworkCred.UserName = FromEmailid;
+            NetworkCred.Password = FromPassword;
             smtp.Credentials = NetworkCred;
             smtp.Port = Convert.ToInt32(port);
-            smtp.Send(mailMessage); //sending Email  
+            try
+            {
+                smtp.Send(mailMessage); //sending Email  
+            }
+            catch(Exception ex)
+            {
+                Logger.Write("Error : Email send failed - " + ex.Message + " at " + System.DateTime.Now.ToString("MMddyyyy HH: mm:ss"));
+                Thread.Sleep(50);
+            }
         }
     }
 }

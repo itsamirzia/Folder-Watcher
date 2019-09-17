@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System;
 using System.Configuration;
+using System.Threading;
 
 namespace DipWatcherAndLogger
 {
@@ -12,6 +13,7 @@ namespace DipWatcherAndLogger
     {
         public static bool captureApplicationLogs = Convert.ToBoolean(ConfigurationManager.AppSettings["ApplicationLogs"].ToString().Trim());
         public static bool captureEventsLogs = Convert.ToBoolean(ConfigurationManager.AppSettings["EventsLogs"].ToString().Trim());
+        static ReaderWriterLock locker = new ReaderWriterLock();
         //private static object locker = new Object();
         /// <summary>
         /// Write logs into the log file
@@ -19,10 +21,28 @@ namespace DipWatcherAndLogger
         /// <param name="textLine"></param>
         public static void Write(string textLine)
         {
-            string logFile = CustomFileHandling.GetOrCreateLogFile(System.Configuration.ConfigurationManager.AppSettings["LogsFolder"].ToString());
-            using (StreamWriter sw = new StreamWriter(logFile, true))
+            try
             {
-                sw.WriteLine(textLine);
+                string logFile = CustomFileHandling.GetOrCreateLogFile(System.Configuration.ConfigurationManager.AppSettings["LogsFolder"].ToString());
+
+
+
+                if (logFile != string.Empty)
+                {
+                    //CustomFileHandling.WaitForFile(logFile);
+                    using (StreamWriter sw = new StreamWriter(logFile, true))
+                    {
+                        locker.AcquireWriterLock(int.MaxValue);
+                        sw.WriteLine(textLine);
+                    }
+                }
+            }
+            catch
+            {
+            }
+            finally
+            {
+                locker.ReleaseWriterLock();
             }
         }
     }

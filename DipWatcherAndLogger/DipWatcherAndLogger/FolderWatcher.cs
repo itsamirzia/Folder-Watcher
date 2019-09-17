@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.ServiceProcess;
 
 
@@ -18,8 +19,10 @@ namespace DipWatcherAndLogger
 
                 if (Logger.captureApplicationLogs)
                     Logger.Write("Application: Window Service Started at " + System.DateTime.Now.ToString("MMddyyyy HH:mm:ss"));
-
-                Watch.Run();
+                //Debugger.Launch();
+                BackupSourceFile.Run();
+                Archiving.Archive();
+                NotificationServices.Notify();
             }
             catch (Exception ex)
             {
@@ -27,10 +30,6 @@ namespace DipWatcherAndLogger
                     Logger.Write("Application: Exception at OnStart Function" + ex);
             }
         }
-
-       
-
-
 
         protected override void OnStop()
         {
