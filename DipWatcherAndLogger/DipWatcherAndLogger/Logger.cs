@@ -42,7 +42,8 @@ namespace DipWatcherAndLogger
             }
             finally
             {
-                locker.ReleaseWriterLock();
+                if(locker.IsWriterLockHeld)
+                    locker.ReleaseWriterLock();
             }
         }
     }

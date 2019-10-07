@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -28,6 +29,21 @@ namespace DipWatcherAndLogger
             syncThread = new Thread(() => SendNotification());
             syncThread.Start();
         }
+        static private DateTime getTime(DateTime LastwriteTime, DateTime AccessTime, DateTime CreationTime)
+        {
+            if (LastwriteTime > AccessTime)
+                if (LastwriteTime > CreationTime)
+                    return LastwriteTime;
+                else
+                    return CreationTime;
+
+            else if (AccessTime > CreationTime)
+                return AccessTime;
+
+            else
+                return CreationTime;
+
+        }
         static private void SendNotification()
         {
             try
@@ -37,12 +53,6 @@ namespace DipWatcherAndLogger
 
                 string message = @"<html>
                 <head>
-                <style>
-                p { background - color: black; }
-                p { color: while; }
-                h2 { background - color: black; }
-                h2 { color: while; }
-                </style>
                 </head>
                 <body><h2>This is an auto-generated email</h2><br /><br />Hi Team,<br /><br />";
                 bool dataFound = false;
@@ -52,7 +62,9 @@ namespace DipWatcherAndLogger
                     int counter = 0;
                     foreach (var fileInfo in new DirectoryInfo(watchPath).GetFiles().OrderBy(x => x.LastWriteTime))
                     {
-                        double totalExistsMinute = (System.DateTime.Now - fileInfo.LastWriteTime).TotalMinutes;
+                        Debugger.Launch();
+                        DateTime latestTime = getTime(fileInfo.LastWriteTime, fileInfo.LastAccessTime, fileInfo.CreationTime);                        
+                        double totalExistsMinute = (System.DateTime.Now - latestTime).TotalMinutes;
                         if (fileInfo.Name != "Thumbs.db")
                         {
                             if (totalExistsMinute > threshold)

@@ -66,12 +66,22 @@ namespace DipWatcherAndLogger
                     foreach (var fileInfo in new DirectoryInfo(processedDirectory).GetFiles().OrderBy(x => x.LastWriteTime))
                     {
                         int totalNumberOfDays = (System.DateTime.Now - fileInfo.LastWriteTime).Days;
-                        if (totalNumberOfDays > Convert.ToInt32(ConfigurationManager.AppSettings["NumberOfDaysToKeepProcessedFile"].ToString()))
+                        if (totalNumberOfDays > Convert.ToInt32(ConfigurationManager.AppSettings["NumberOfDaysToKeepProcessedFile"].ToString().Trim()))
                         {
-                            string folderName = watchPath + backupFolderName + "\\" + backupFolderPrefix + fileInfo.LastWriteTime.ToString("MM-yyyy") + "\\";
-                            CustomFileHandling.CreateDirectoryIfDoesNotExist(folderName);
-                            CustomFileHandling.WaitForFile(fileInfo.FullName);
-                            File.Move(fileInfo.FullName, folderName + fileInfo.Name);
+                            try
+                            {
+                                string folderName = watchPath + backupFolderName + "\\" + backupFolderPrefix + fileInfo.LastWriteTime.ToString("MM-yyyy") + "\\";
+                                CustomFileHandling.CreateDirectoryIfDoesNotExist(folderName);
+                                CustomFileHandling.WaitForFile(fileInfo.FullName);
+                                File.Move(fileInfo.FullName, folderName + fileInfo.Name);
+                            }
+                            catch (Exception ex)
+                            {
+                                if (Logger.captureApplicationLogs)
+                                {
+                                    Logger.Write("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at archiving processed folder \r\n" + ex.Message);
+                                }
+                            }
                         }
                     }
                 }

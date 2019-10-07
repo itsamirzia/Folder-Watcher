@@ -37,9 +37,9 @@ namespace DipWatcherAndLogger
                     FileSystemWatcher watcher = new FileSystemWatcher();
                     watcher.Path = watchPath;
                     watcher.Filter = "*.*";
-                    watcher.Created += OnCreated;
-                    watcher.Deleted += OnDeleted;
-                    watcher.Renamed += OnRenamed;
+                    watcher.Created += new FileSystemEventHandler(OnCreated);
+                    watcher.Deleted += new FileSystemEventHandler(OnDeleted);
+                    watcher.Renamed += new RenamedEventHandler(OnRenamed);
                     watcher.EnableRaisingEvents = true;
                 }
                 else
@@ -47,7 +47,6 @@ namespace DipWatcherAndLogger
                     if (Logger.captureApplicationLogs)
                     {
                         Logger.Write("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Given ingestion folder (" + watchPath + ") path is not found");
-                        Thread.Sleep(50);
                     }
                 }
             }
@@ -56,7 +55,6 @@ namespace DipWatcherAndLogger
                 if (Logger.captureApplicationLogs)
                 {
                     Logger.Write("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at Execute Function -" + ex);
-                    Thread.Sleep(50);
                 }
             }
         }
@@ -81,11 +79,11 @@ namespace DipWatcherAndLogger
         {
             try
             {
-                if (Path.GetExtension(e.FullPath).ToUpper() != ".TXT")
+                if (Path.GetExtension(e.FullPath).ToUpper() != ".TXT" && Path.GetExtension(e.FullPath).ToUpper() != ".DIP")
                 {
                     CustomFileHandling.WaitForFile(e.FullPath);
-                    string path = DeletedCopyFolder + GetBackupFolderName(e.FullPath, true);                    
-                    File.Move(e.FullPath, path + "Renamed("+e.OldName+")_"+AppendTimeStamp(e.Name));
+                    string path = DeletedCopyFolder + GetBackupFolderName(e.FullPath, true);
+                    File.Copy(e.FullPath, path + "Renamed(" + Path.GetFileNameWithoutExtension(e.OldName) + ") to_" + e.Name, true);
                 }
             }
             catch (Exception ex)
@@ -93,7 +91,6 @@ namespace DipWatcherAndLogger
                 if (Logger.captureApplicationLogs)
                 {
                     Logger.Write("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at Renamed Event \r\n" + ex.Message);
-                    Thread.Sleep(50);
                 }
             }
 
@@ -108,7 +105,7 @@ namespace DipWatcherAndLogger
                 string[] allFiles = Directory.GetFiles(watchPath);
                 foreach (string filename in allFiles)
                 {
-                    if (Path.GetExtension(filename).ToUpper() != ".TXT")
+                    if (Path.GetExtension(filename).ToUpper() != ".TXT" && Path.GetExtension(filename).ToUpper() != ".DIP")
                     {
                         string pathToMove = DeletedCopyFolder + GetBackupFolderName(watchPath, true);
                         File.Copy(filename, pathToMove + AppendTimeStamp(filename.Substring(filename.LastIndexOf("\\") + 1)), true);
@@ -120,7 +117,6 @@ namespace DipWatcherAndLogger
                 if (Logger.captureApplicationLogs)
                 {
                     Logger.Write("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at MakeEqualLevelFolderForSourceAndBackup Function \r\n" + ex.Message);
-                    Thread.Sleep(50);
                 }
             }
 
@@ -137,12 +133,12 @@ namespace DipWatcherAndLogger
                 if (Logger.captureEventsLogs)
                 {
                     Logger.Write("Event: " + e.FullPath + "\t IN \t" + System.DateTime.Now.ToString("MMddyyyy HH:mm:ss"));
-                    Thread.Sleep(50);
                 }
-                if (Path.GetExtension(e.Name).ToUpper() != ".TXT")
+                if (Path.GetExtension(e.Name).ToUpper() != ".TXT" && Path.GetExtension(e.Name).ToUpper() != ".DIP")
                 {
                     CustomFileHandling.WaitForFile(e.FullPath);
                     string pathToMove = DeletedCopyFolder + GetBackupFolderName(e.FullPath, true);
+                    CustomFileHandling.CreateDirectoryIfDoesNotExist(pathToMove);
                     File.Copy(e.FullPath, pathToMove + AppendTimeStamp(e.Name), true);
                 }
             }
@@ -151,7 +147,6 @@ namespace DipWatcherAndLogger
                 if (Logger.captureApplicationLogs)
                 {
                     Logger.Write("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at Created Event \r\n" + ex.Message);
-                    Thread.Sleep(50);
                 }
             }
         }
@@ -167,7 +162,6 @@ namespace DipWatcherAndLogger
                 if (Logger.captureEventsLogs)
                 {
                     Logger.Write("Event: " + e.FullPath + "\t OUT \t" + System.DateTime.Now.ToString("MMddyyyy HH:mm:ss"));
-                    Thread.Sleep(50);
                 }
                 
             }
@@ -176,7 +170,6 @@ namespace DipWatcherAndLogger
                 if (Logger.captureApplicationLogs)
                 {
                     Logger.Write("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at Deleted Event \r\n" + ex.Message);
-                    Thread.Sleep(50);
                 }
             }
         }
@@ -193,6 +186,7 @@ namespace DipWatcherAndLogger
         /// </summary>
         private static void PrepareFolderStucture(string watchPath)
         {
+            Debugger.Launch();
             CustomFileHandling.CreateDirectoryIfDoesNotExist(DeletedCopyFolder+ GetBackupFolderName(watchPath,true));
         }
 

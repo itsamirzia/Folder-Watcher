@@ -124,7 +124,7 @@
     <value>196, 17</value>
   </metadata>
   <data name="serviceInstaller1.Description" xml:space="preserve">
-    <value>The purpose of this service is to keep a copy of files deleted from the ingestion folder. Send notification if file sitting more than its threshold value. Also archive date from processed folder to archive folder</value>
+    <value>The purpose of this service is to keep a copy of files deleted from the ingestion folder. Send notification if file sitting more than its threshold value. Also archive data from processed folder to archive folder</value>
   </data>
   <metadata name="$this.TrayLargeIcon" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>False</value>
