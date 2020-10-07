@@ -61,8 +61,7 @@ namespace DipWatcherAndLogger
 
                     int counter = 0;
                     foreach (var fileInfo in new DirectoryInfo(watchPath).GetFiles().OrderBy(x => x.LastWriteTime))
-                    {
-                        Debugger.Launch();
+                    {                          
                         DateTime latestTime = getTime(fileInfo.LastWriteTime, fileInfo.LastAccessTime, fileInfo.CreationTime);                        
                         double totalExistsMinute = (System.DateTime.Now - latestTime).TotalMinutes;
                         if (fileInfo.Name != "Thumbs.db")
@@ -71,6 +70,12 @@ namespace DipWatcherAndLogger
                             {
                                 counter++;
                                 dataFound = true;
+                                if (watchPath.ToUpper().Contains("ERROR_FILES"))
+                                {
+                                    string fileToMove = watchPath + "\\" + DateTime.Now.ToString("MMddyyyy");
+                                    CustomFileHandling.CreateDirectoryIfDoesNotExist(fileToMove);
+                                    File.Move(fileInfo.FullName, fileToMove + "\\" + fileInfo.Name);
+                                }
                             }
                         }
                     }
@@ -89,7 +94,7 @@ namespace DipWatcherAndLogger
 
                     if (Convert.ToBoolean(ConfigurationManager.AppSettings["WriteNotification"].Trim()) == true)
                     {
-                        Logger.Write("INFO: Email notification sent at " + System.DateTime.Now.ToString("MMddyyyy HH:mm:ss"));
+                        Logger.AddtoWritingQueue.Enqueue("INFO: Email notification at " + System.DateTime.Now.ToString("MMddyyyy HH:mm:ss"));
                         Thread.Sleep(100);
                     }
 
@@ -103,7 +108,7 @@ namespace DipWatcherAndLogger
             {
                 if (Logger.captureApplicationLogs)
                 {
-                    Logger.Write("Error : occured in Notification service -" + ex.Message);
+                    Logger.AddtoWritingQueue.Enqueue("Error : occured in Notification service -" + ex.Message);
                     Thread.Sleep(100);
                 }
             }

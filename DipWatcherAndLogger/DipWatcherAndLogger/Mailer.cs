@@ -13,9 +13,12 @@ namespace DipWatcherAndLogger
 {
     static class Mailer
     {
+        /// <summary>
+        /// Send an SMTP email
+        /// </summary>
+        /// <param name="body"></param>
         static public void SendMail(string body)
         {
-            //Debugger.Launch();
             string HostAdd = ConfigurationManager.AppSettings["host"].ToString();
             string FromEmailid = ConfigurationManager.AppSettings["Forwarder"].ToString();
             string FromPassword = ConfigurationManager.AppSettings["ForwarderPassword"].ToString();
@@ -72,7 +75,7 @@ namespace DipWatcherAndLogger
             }
             catch(Exception ex)
             {
-                Logger.Write("Error : Email send failed - " + ex.Message + " at " + System.DateTime.Now.ToString("MMddyyyy HH: mm:ss"));
+                Logger.AddtoWritingQueue.Enqueue("Error : Email send failed - " + ex.Message + " at " + System.DateTime.Now.ToString("MMddyyyy HH: mm:ss"));
                 Thread.Sleep(50);
             }
         }

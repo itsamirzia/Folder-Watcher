@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.ServiceProcess;
 
@@ -16,25 +17,27 @@ namespace DipWatcherAndLogger
         {
             try
             {
-
-                if (Logger.captureApplicationLogs)
-                    Logger.Write("Application: Window Service Started at " + System.DateTime.Now.ToString("MMddyyyy HH:mm:ss"));
                 //Debugger.Launch();
+                if (Logger.captureApplicationLogs)
+                    Logger.AddtoWritingQueue.Enqueue("Application: Window Service Started at " + System.DateTime.Now.ToString("MMddyyyy HH:mm:ss"));
+                 
                 BackupSourceFile.Run();
                 Archiving.Archive();
                 NotificationServices.Notify();
+                Logging.Enqueue();
+                Logger.Write();
             }
             catch (Exception ex)
             {
-                if (Logger.captureApplicationLogs)
-                    Logger.Write("Application: Exception at OnStart Function" + ex);
+                if(Logger.captureApplicationLogs)
+                    Logger.AddtoWritingQueue.Enqueue("Application: Exception at OnStart Function" + ex);
             }
         }
 
         protected override void OnStop()
         {
-            if (Logger.captureApplicationLogs)
-                Logger.Write("Application: Window Service Stopped at "+ System.DateTime.Now.ToString("MMddyyyy HH:mm:ss"));
+            if(Logger.captureApplicationLogs)
+                Logger.AddtoWritingQueue.Enqueue("Application: Window Service Stopped at " + System.DateTime.Now.ToString("MMddyyyy HH:mm:ss"));
         }
     }
 }

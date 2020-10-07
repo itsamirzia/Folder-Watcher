@@ -28,8 +28,6 @@ namespace DipWatcherAndLogger
         {
             try
             {
-                //Debugger.Launch();                
-
                 PrepareFolderStucture(watchPath);
                 if (Directory.Exists(watchPath))
                 {
@@ -37,16 +35,16 @@ namespace DipWatcherAndLogger
                     FileSystemWatcher watcher = new FileSystemWatcher();
                     watcher.Path = watchPath;
                     watcher.Filter = "*.*";
+                    watcher.InternalBufferSize = Convert.ToInt32(ConfigurationManager.AppSettings["InternalBufferSize"]);
                     watcher.Created += new FileSystemEventHandler(OnCreated);
-                    watcher.Deleted += new FileSystemEventHandler(OnDeleted);
-                    watcher.Renamed += new RenamedEventHandler(OnRenamed);
+                    watcher.Error += new ErrorEventHandler(LogBufferError);
                     watcher.EnableRaisingEvents = true;
                 }
                 else
                 {
                     if (Logger.captureApplicationLogs)
                     {
-                        Logger.Write("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Given ingestion folder (" + watchPath + ") path is not found");
+                        Logger.AddtoWritingQueue.Enqueue("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Given ingestion folder (" + watchPath + ") path is not found");                        
                     }
                 }
             }
@@ -54,8 +52,16 @@ namespace DipWatcherAndLogger
             {
                 if (Logger.captureApplicationLogs)
                 {
-                    Logger.Write("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at Execute Function -" + ex);
+                    Logger.AddtoWritingQueue.Enqueue("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at Execute Function -" + ex);
                 }
+            }
+        }
+
+        private static void LogBufferError(object sender, ErrorEventArgs e)
+        {
+            if (Logger.captureApplicationLogs)
+            {
+                Logger.AddtoWritingQueue.Enqueue("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " - " + e.GetException());
             }
         }
 
@@ -64,37 +70,16 @@ namespace DipWatcherAndLogger
         /// </summary>
         public static void Run()
         {
-            string[] watchPathArray = System.Configuration.ConfigurationManager.AppSettings["WatchPaths"].ToString().Split('|');
-            foreach (string watchPath in watchPathArray)
+            if (ConfigurationManager.AppSettings["backup"].ToString().ToUpper() == "TRUE")
             {
-                Execute(watchPath);
-            }
-        }
-        /// <summary>
-        /// This event will fire if file name is renamed
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private static void OnRenamed(object sender, RenamedEventArgs e)
-        {
-            try
-            {
-                if (Path.GetExtension(e.FullPath).ToUpper() != ".TXT" && Path.GetExtension(e.FullPath).ToUpper() != ".DIP")
+                string[] watchPathArray = System.Configuration.ConfigurationManager.AppSettings["WatchPaths"].ToString().Split('|');
+                foreach (string watchPath in watchPathArray)
                 {
-                    CustomFileHandling.WaitForFile(e.FullPath);
-                    string path = DeletedCopyFolder + GetBackupFolderName(e.FullPath, true);
-                    File.Copy(e.FullPath, path + "Renamed(" + Path.GetFileNameWithoutExtension(e.OldName) + ") to_" + e.Name, true);
+                    Execute(watchPath);
                 }
-            }
-            catch (Exception ex)
-            {
-                if (Logger.captureApplicationLogs)
-                {
-                    Logger.Write("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at Renamed Event \r\n" + ex.Message);
-                }
-            }
-
+            }            
         }
+            
         /// <summary>
         /// Initially to make Source and SourceMirror on same level. Exclude txt files as it already being backed up by preprocessor exe.
         /// </summary>
@@ -116,7 +101,7 @@ namespace DipWatcherAndLogger
             {
                 if (Logger.captureApplicationLogs)
                 {
-                    Logger.Write("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at MakeEqualLevelFolderForSourceAndBackup Function \r\n" + ex.Message);
+                    Logger.AddtoWritingQueue.Enqueue("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at MakeEqualLevelFolderForSourceAndBackup Function \r\n" + ex.Message);
                 }
             }
 
@@ -130,49 +115,67 @@ namespace DipWatcherAndLogger
         {            
             try
             {
-                if (Logger.captureEventsLogs)
-                {
-                    Logger.Write("Event: " + e.FullPath + "\t IN \t" + System.DateTime.Now.ToString("MMddyyyy HH:mm:ss"));
-                }
-                if (Path.GetExtension(e.Name).ToUpper() != ".TXT" && Path.GetExtension(e.Name).ToUpper() != ".DIP")
-                {
-                    CustomFileHandling.WaitForFile(e.FullPath);
-                    string pathToMove = DeletedCopyFolder + GetBackupFolderName(e.FullPath, true);
-                    CustomFileHandling.CreateDirectoryIfDoesNotExist(pathToMove);
-                    File.Copy(e.FullPath, pathToMove + AppendTimeStamp(e.Name), true);
-                }
+                Thread thread = new Thread(() => CreateACopyOfDocument(e.FullPath, e.Name));
+                thread.Start();
             }
             catch (Exception ex)
             {
                 if (Logger.captureApplicationLogs)
                 {
-                    Logger.Write("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at Created Event \r\n" + ex.Message);
+                    Logger.AddtoWritingQueue.Enqueue("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at Created Event \r\n" + ex.Message);
                 }
             }
         }
-        /// <summary>
-        /// This function executes when delete event happen in your watcher folder
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private static void OnDeleted(object sender, FileSystemEventArgs e)
+        private static void CopyAFileThread(string from, string to)
         {
             try
             {
-                if (Logger.captureEventsLogs)
+                File.Copy(from, to, true);
+            }
+            catch (Exception ex)
+            {
+                if (Logger.captureApplicationLogs)
                 {
-                    Logger.Write("Event: " + e.FullPath + "\t OUT \t" + System.DateTime.Now.ToString("MMddyyyy HH:mm:ss"));
+                    Logger.AddtoWritingQueue.Enqueue("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Problem in copying file+ "+from+"  \r\n" + ex.Message);
                 }
+            }
+        }
+        private static void CreateACopyOfDocument(string fullPath, string filename, string oldName="", bool isRenamed = false)
+        {
+            try
+            {
+                if (Path.GetExtension(filename).ToUpper() != ".TXT" && Path.GetExtension(filename).ToUpper() != ".DIP")
+                {
+                    CustomFileHandling.WaitForFile(fullPath);
+                    string pathToMove = DeletedCopyFolder + GetBackupFolderName(fullPath, true);
+                    CustomFileHandling.CreateDirectoryIfDoesNotExist(pathToMove);
+
+                        if (isRenamed)
+                        {
+                                File.Copy(fullPath, pathToMove + "Renamed(" + Path.GetFileNameWithoutExtension(oldName) + ") to_" + filename);                            
+                        }
+                        else
+                        {    
+                                File.Copy(fullPath, pathToMove + AppendTimeStamp(filename), true);
+                        }
+                    }
                 
             }
             catch (Exception ex)
             {
                 if (Logger.captureApplicationLogs)
                 {
-                    Logger.Write("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at Deleted Event \r\n" + ex.Message);
+                    Logger.AddtoWritingQueue.Enqueue("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at Created Event \r\n" + ex.Message);
                 }
             }
         }
+
+        
+        /// <summary>
+        /// Append time stamp to a filename
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         private static string AppendTimeStamp(this string fileName)
         {
             return string.Concat(
@@ -186,7 +189,7 @@ namespace DipWatcherAndLogger
         /// </summary>
         private static void PrepareFolderStucture(string watchPath)
         {
-            Debugger.Launch();
+            //Debugger.Launch();
             CustomFileHandling.CreateDirectoryIfDoesNotExist(DeletedCopyFolder+ GetBackupFolderName(watchPath,true));
         }
 

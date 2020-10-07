@@ -28,7 +28,8 @@ namespace DipWatcherAndLogger
         /// </summary>
         public static void Archive()
         {
-            //Debugger.Launch();
+            ProcessedFolder();
+            BackupFolder();
             timer1 = new System.Timers.Timer();
             timer1.Interval = Convert.ToDouble(ConfigurationManager.AppSettings["ArchivingCycleTimeInMinute"]) * 60 * 1000; // 86400000; // (Converting milliseconds into one day 24(hours) * 60(Minutes) * 60(seconds) * 1000(Milliseconds) = 86400000)
             timer1.Enabled = true;
@@ -79,7 +80,8 @@ namespace DipWatcherAndLogger
                             {
                                 if (Logger.captureApplicationLogs)
                                 {
-                                    Logger.Write("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at archiving processed folder \r\n" + ex.Message);
+                                    Logger.AddtoWritingQueue.Enqueue("Application: " + DateTime.Now.ToString("MMddyyyy HH:mm:ss") + " Exception at archiving processed folder \r\n" + ex.Message);
+                                    
                                 }
                             }
                         }
